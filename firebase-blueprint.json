@@ -1,0 +1,45 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User account settings for cycle configuration.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "lastPeriodDate": { "type": "string" },
+        "cycleLength": { "type": "integer" },
+        "lutealPhase": { "type": "integer" },
+        "measurementUnit": { "type": "string" }
+      },
+      "required": ["email", "displayName", "lastPeriodDate", "cycleLength", "lutealPhase", "measurementUnit"]
+    },
+    "SymptomLog": {
+      "title": "SymptomLog",
+      "description": "Logged body metrics and symptoms for a specific calendar date.",
+      "type": "object",
+      "properties": {
+        "cramping": { "type": "boolean" },
+        "bloating": { "type": "boolean" },
+        "tenderBreasts": { "type": "boolean" },
+        "fatigue": { "type": "boolean" },
+        "headache": { "type": "boolean" },
+        "moodSwings": { "type": "boolean" },
+        "increasedLibido": { "type": "boolean" },
+        "tempReading": { "type": "string" },
+        "mucusType": { "type": "string" }
+      },
+      "required": ["cramping", "bloating", "tenderBreasts", "fatigue", "headache", "moodSwings", "increasedLibido", "tempReading", "mucusType"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Private user profiles containing biological coefficients."
+    },
+    "/users/{userId}/symptomLogs/{dateStr}": {
+      "schema": "SymptomLog",
+      "description": "Intimate symptom logging on specific calendar dates."
+    }
+  }
+}

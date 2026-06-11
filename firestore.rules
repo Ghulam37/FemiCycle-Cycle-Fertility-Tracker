@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Default Deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Schema Validation Helpers
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['email', 'displayName', 'lastPeriodDate', 'cycleLength', 'lutealPhase', 'measurementUnit'])
+        && (data.keys().size() == 6 || (data.keys().size() == 7 && 'isPremium' in data))
+        && data.email is string && data.email.size() <= 200
+        && data.displayName is string && data.displayName.size() <= 100
+        && data.lastPeriodDate is string && data.lastPeriodDate.size() == 10
+        && data.cycleLength is int && data.cycleLength >= 21 && data.cycleLength <= 45
+        && data.lutealPhase is int && data.lutealPhase >= 10 && data.lutealPhase <= 16
+        && data.measurementUnit is string && (data.measurementUnit == 'F' || data.measurementUnit == 'C')
+        && (!('isPremium' in data) || data.isPremium is bool);
+    }
+
+    function isValidSymptomLog(data) {
+      return data.keys().hasAll(['cramping', 'bloating', 'tenderBreasts', 'fatigue', 'headache', 'moodSwings', 'increasedLibido', 'tempReading', 'mucusType'])
+        && data.keys().size() == 9
+        && data.cramping is bool
+        && data.bloating is bool
+        && data.tenderBreasts is bool
+        && data.fatigue is bool
+        && data.headache is bool
+        && data.moodSwings is bool
+        && data.increasedLibido is bool
+        && data.tempReading is string && data.tempReading.size() <= 10
+        && data.mucusType is string && data.mucusType.size() <= 20;
+    }
+
+    // Rule matches
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUserProfile(request.resource.data);
+      allow update: if isOwner(userId) && isValidUserProfile(request.resource.data)
+        && request.resource.data.email == resource.data.email; // email is immutable
+      allow delete: if false; // profiles cannot be deleted directly
+
+      match /symptomLogs/{dateStr} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidSymptomLog(request.resource.data);
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

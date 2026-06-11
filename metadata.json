@@ -1,0 +1,6 @@
+{
+  "name": "FemiCycle – Cycle & Fertility Tracker",
+  "description": "A sophisticated ovulation tracking, cycle analysis, and fertility tracking platform with dynamic predictions, symptom analysis, and premium features.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
